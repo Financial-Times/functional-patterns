@@ -1,0 +1,28 @@
+# mvn
+**/target
+
+# eclipse
+.settings
+.project
+.settings
+.classpath
+.project
+
+# intellij
+.idea
+**/*.iml
+
+# puppet
+puppet/**/pkg
+
+#Atlassian Mylyn Eclipse plugin tasks list
+atlassian-ide-plugin.xml
+
+**/*.log.gz
+**/*.log
+
+*.pyc
+
+######################################################################
+## WARNING - beware of auto-added lines by Eclipse below this line! ##
+######################################################################
