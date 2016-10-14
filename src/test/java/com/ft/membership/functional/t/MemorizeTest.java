@@ -1,5 +1,6 @@
-package com.ft.membership.functional;
+package com.ft.membership.functional.t;
 
+import com.ft.membership.functional.Memorize;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;

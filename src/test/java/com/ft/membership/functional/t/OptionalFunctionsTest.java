@@ -1,4 +1,4 @@
-package com.ft.membership.functional;
+package com.ft.membership.functional.t;
 
 import org.junit.Test;
 

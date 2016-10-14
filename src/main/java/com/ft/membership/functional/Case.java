@@ -35,7 +35,7 @@ import java.util.function.Supplier;
  *     .when( x,    y,     Null ).apply( () -&gt; g(x,y) )
  *     .when( x,    Null,  z    ).apply( () -&gt; h(x,z) )
  *     .when( x,    Null,  Null ).apply( () -&gt; i(x) )
- *     .orElseThrow( () -&gt; new IllegalArgumentException("No Match") )
+ *     .orElseThrow()
  * </pre>
  *
  * <p>Arguments to {@link Case.WhenClause#when} can be either literals, which will be matched using
@@ -45,9 +45,9 @@ import java.util.function.Supplier;
  * (non-empty {@link java.util.Optional}), <code>None</code> (empty {@link java.util.Optional})
  * or <code>Any</code> (anything at all, alias <code>__</code>).</p>
  *
- * <p>The {@link java.util.function.Supplier} or {@link java.util.function.Function} given to
- * {@link Case.ApplyClause#apply} will only be called when the corresponding when-clause matches,
- * and, like a case statement, at most one when-clause will be matched.</p>
+ * <p>The {@link java.util.function.Supplier} given to {@link Case.ApplyClause#apply} will only
+ * be called when the corresponding when-clause matches, and, like a case statement, at most one
+ * when-clause will be matched.</p>
  *
  * @param <R> type of result of expression.
  */
@@ -56,8 +56,14 @@ public class Case<R> {
     private final Object[] values;
 
     public static <R> Case<R> match(final Object... values) {
-        Preconditions.checkNotNull(values, "null varargs array (single null argument?)");
+        Preconditions.checkArgument(values != null, "null varargs array");
         return new Case<>(values);
+    }
+
+    public static class NonMatchingCaseException extends RuntimeException {
+        NonMatchingCaseException() {
+            super("No clauses matched the input.");
+        }
     }
 
     public static class Matchers {
@@ -150,7 +156,8 @@ public class Case<R> {
     public interface ApplyClause<R> {
         ResultChain<R> apply(final Supplier<R> supplier);
 
-        ResultChain<R> apply(final Function<Object[],R> functionTakingValues);
+        // method name avoids spurious type ambiguity
+        ResultChain<R> applyValues(final Function<Object[],R> functionTakingValues);
 
         <X extends Throwable> ResultChain<R> thenThrow(final Supplier<? extends X> exceptionSupplier) throws X;
     }
@@ -159,37 +166,42 @@ public class Case<R> {
         ApplyClause<R> when(final Object... matchers);
     }
 
-    public interface Result<R> {
+    public static abstract class Result<R> {
 
-        Optional<R> result();
+        public abstract Optional<R> result();
 
-        default R get() {
+        public R get() {
             return result().get();
         }
-        default R orElse(R other) {
+        public  R orElse(R other) {
             return result().orElse(other);
         }
 
-        default R orElseGet(final Supplier<R> supplier) {
+        public  R orElseGet(final Supplier<R> supplier) {
             return result().orElseGet(supplier);
         }
-        default <X extends Throwable> R orElseThrow(final Supplier<? extends X> exceptionSupplier) throws X {
+        public  <X extends Throwable> R orElseThrow(final Supplier<? extends X> exceptionSupplier) throws X {
             return result().orElseThrow(exceptionSupplier);
         }
-        default <U> Optional<U> map(final Function<R, U> f) {
+        public  <X extends Throwable> R orElseThrow() throws X {
+            return result().orElseThrow(NonMatchingCaseException::new);
+        }
+
+        public  <U> Optional<U> map(final Function<R, U> f) {
             return result().map(f);
         }
-        default <U> Optional<U> flatMap(final Function<R, Optional<U>> f) {
+        public  <U> Optional<U> flatMap(final Function<R, Optional<U>> f) {
             return result().flatMap(f);
         }
+
     }
 
-    public interface ResultChain<R> extends Result<R>, WhenClause<R> {}
+    public static abstract class ResultChain<R> extends Result<R> implements WhenClause<R> {}
 
-    public static class WhenMatcher<R> implements ResultChain<R> {
+    private static class WhenMatcher<R> extends ResultChain<R> {
         private final Case<R> templates;
 
-        public WhenMatcher(final Case<R> templates) {
+        WhenMatcher(final Case<R> templates) {
             this.templates = templates;
         }
 
@@ -201,7 +213,9 @@ public class Case<R> {
         @Override
         public ApplyClause<R> when(final Object... matchers) {
             Preconditions.checkNotNull(matchers, "matchers required");
-            Preconditions.checkArgument(matchers.length == templates.values.length,"match does not match number of values");
+            Preconditions.checkArgument(matchers.length == templates.values.length,
+                    String.format("number of matchers (%d) does not match number of input values (%d)", matchers.length, templates.values.length)
+            );
 
             // DO Matching
             if(matches(templates.values, matchers)) {
@@ -233,11 +247,11 @@ public class Case<R> {
         }
     }
 
-    public static class ResultPassthruChain<R> implements ResultChain<R>, ApplyClause<R> {
+    private static class ResultPassthruChain<R> extends ResultChain<R> implements ApplyClause<R> {
 
         private final Optional<R> result;
 
-        public ResultPassthruChain(final Optional<R> result) {
+        ResultPassthruChain(final Optional<R> result) {
             this.result = result;
         }
 
@@ -257,7 +271,7 @@ public class Case<R> {
         }
 
         @Override
-        public ResultChain<R> apply(final Function<Object[], R> functionTakingValues) {
+        public ResultChain<R> applyValues(final Function<Object[], R> functionTakingValues) {
             return this;
         }
 
@@ -268,10 +282,10 @@ public class Case<R> {
 
     }
 
-    public static class PassiveApplyClause<R> implements ApplyClause<R> {
+    private static class PassiveApplyClause<R> implements ApplyClause<R> {
         private final Case<R> templates;
 
-        public PassiveApplyClause(final Case<R> templates) {
+        PassiveApplyClause(final Case<R> templates) {
             this.templates = templates;
         }
 
@@ -281,7 +295,7 @@ public class Case<R> {
         }
 
         @Override
-        public ResultChain<R> apply(final Function<Object[], R> functionTakingValues) {
+        public ResultChain<R> applyValues(final Function<Object[], R> functionTakingValues) {
             return new WhenMatcher<>(templates);
         }
 
@@ -292,11 +306,11 @@ public class Case<R> {
 
     }
 
-    public static class ActiveApplyClause<R> implements ApplyClause<R> {
+    private static class ActiveApplyClause<R> implements ApplyClause<R> {
 
         private final Case<R> templates;
 
-        public ActiveApplyClause(final Case<R> templates) {
+        ActiveApplyClause(final Case<R> templates) {
             this.templates = templates;
         }
 
@@ -306,7 +320,7 @@ public class Case<R> {
         }
 
         @Override
-        public ResultChain<R> apply(final Function<Object[], R> functionTakingValues) {
+        public ResultChain<R> applyValues(final Function<Object[], R> functionTakingValues) {
             return new ResultPassthruChain<>(Optional.of(functionTakingValues.apply(templates.values)));
         }
 

@@ -1,5 +1,6 @@
-package com.ft.membership.functional;
+package com.ft.membership.functional.t;
 
+import com.ft.membership.functional.Case;
 import org.junit.Test;
 
 import java.util.Objects;
@@ -8,14 +9,13 @@ import java.util.function.Predicate;
 
 import static com.ft.membership.functional.Case.Matchers.*;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertThat;
 
 public class CaseTest {
 
     @Test
-    public void should_match_with_hamcrest_matchers() {
+    public void match_with_hamcrest_matchers() {
         Integer a = 1;
         String b = "c";
 
@@ -30,7 +30,7 @@ public class CaseTest {
     }
 
     @Test
-    public void should_return_first_match() {
+    public void return_first_match() {
         Integer a = 1;
         String b = "c";
 
@@ -44,7 +44,7 @@ public class CaseTest {
     }
 
     @Test
-    public void should_match_literal_objects_with_object_equals() {
+    public void match_literal_objects_with_object_equals() {
         Integer a = 2;
         String b = "c";
 
@@ -58,7 +58,7 @@ public class CaseTest {
     }
 
     @Test
-    public void should_match_with_predicates() {
+    public void match_with_predicates() {
         Integer a = 1;
         String b = "c";
 
@@ -84,7 +84,7 @@ public class CaseTest {
     }
 
     @Test
-    public void should_match_null_objects_with_Any() {
+    public void match_null_objects_with_Any() {
         Integer a = 2;
         String b = null;
 
@@ -98,7 +98,7 @@ public class CaseTest {
     }
 
     @Test
-    public void should_match_null_objects_with___() {
+    public void match_null_objects_with___() {
         Integer a = 2;
         String b = null;
 
@@ -112,7 +112,7 @@ public class CaseTest {
     }
 
     @Test
-    public void should_match_null_objects_with_Null() {
+    public void match_null_objects_with_Null() {
         Integer a = 2;
         String b = null;
 
@@ -126,7 +126,7 @@ public class CaseTest {
     }
 
     @Test
-    public void should_match_non_null_objects_with_Ref() {
+    public void match_non_null_objects_with_Ref() {
         Integer a = 2;
         String b = "c";
 
@@ -140,7 +140,7 @@ public class CaseTest {
     }
 
     @Test
-    public void should_fall_through_to_default_when_no_matches() {
+    public void fall_through_to_default_when_no_matches() {
         Integer a = 3;
         String b = "x";
 
@@ -154,7 +154,7 @@ public class CaseTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void should_fall_through_to_throw_when_no_matches() {
+    public void fall_through_to_throw_when_no_matches() {
         Integer a = 3;
         String b = "x";
 
@@ -163,8 +163,18 @@ public class CaseTest {
                 .orElseThrow(RuntimeException::new);
     }
 
+    @Test(expected = Case.NonMatchingCaseException.class)
+    public void fall_through_to_default_throw_when_no_matches() {
+        Integer a = 3;
+        String b = "x";
+
+        Case.<Integer>match(a, b)
+                .when(1,__).apply(() -> 1)
+                .orElseThrow();
+    }
+
     @Test
-    public void should_fall_through_to_supplier_when_no_matches() {
+    public void fall_through_to_supplier_when_no_matches() {
         Integer a = 3;
         String b = "x";
 
@@ -176,7 +186,7 @@ public class CaseTest {
     }
 
     @Test
-    public void should_match_optional_empty() {
+    public void match_optional_empty() {
         Optional<String> a = Optional.empty();
 
         Integer result = Case.<Integer>match(a)
@@ -187,7 +197,7 @@ public class CaseTest {
     }
 
     @Test
-    public void should_match_optional_present() {
+    public void match_optional_present() {
         Optional<String> a = Optional.of("Hello");
 
         Integer result = Case.<Integer>match(a)
@@ -198,8 +208,24 @@ public class CaseTest {
         assertThat(result, is(2));
     }
 
+    @Test
+    public void no_illegal_argument_on_single_null_value() {
+        Object a = null;
+        Case.<Integer>match(a)
+                .when(__).apply(() -> 1)
+                .orElse(0);
+    }
+
     @Test(expected = IllegalArgumentException.class)
-    public void should_require_same_number_of_matchers_as_values() {
+    public void illegal_argument_on_null_varargs_array_value() {
+        Object[] a = null;
+        Case.<Integer>match(a)
+                .when(__).apply(() -> 1)
+                .orElse(0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void require_same_number_of_matchers_as_values() {
         Integer a = 1;
 
         Case.<Integer>match(a)
@@ -208,13 +234,24 @@ public class CaseTest {
 
     }
 
+
+    @Test(expected = IllegalArgumentException.class)
+    public void require_same_number_of_matchers_as_values_2() {
+        Integer a = 1;
+
+        Case.<Integer>match(a,5)
+                .when(__, 1, 2).apply(() -> 1)
+                .orElse(0);
+
+    }
+
     @Test
-    public void should_pass_template_args_to_function() throws Exception {
+    public void pass_template_args_to_function() throws Exception {
         Integer a = 3;
         String b = "x";
 
         Integer result = Case.<Integer>match(a, b, 19.4)
-                .when(3, __, __).apply((args) -> args.length)
+                .when(3, __, __).applyValues((args) -> args.length)
                 .orElseGet(() -> 8);
 
         assertThat(result, is(3));

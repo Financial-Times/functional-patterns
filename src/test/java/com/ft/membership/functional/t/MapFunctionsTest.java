@@ -1,5 +1,6 @@
-package com.ft.membership.functional;
+package com.ft.membership.functional.t;
 
+import com.ft.membership.functional.MapFunctions;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 

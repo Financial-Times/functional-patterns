@@ -1,5 +1,6 @@
-package com.ft.membership.functional;
+package com.ft.membership.functional.t;
 
+import com.ft.membership.functional.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.junit.Test;
 
