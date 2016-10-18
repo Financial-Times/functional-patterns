@@ -2,13 +2,35 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <name>Functional Patterns</name>
-    <description>General Functional Patterns</description>
+    <description>A collection of functional programming patterns for Java 8+</description>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Ellis Pritchard</name>
+            <email>ellis.pritchard@ft.com</email>
+            <organization>Financial Times</organization>
+            <organizationUrl>https://github.com/Financial-Times</organizationUrl>
+        </developer>
+    </developers>
 
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.ft</groupId>
     <artifactId>functional-patterns</artifactId>
     <version>1.0.14-SNAPSHOT</version>
+
+    <scm>
+        <connection>scm:git:git://github.com/Financial-Times/functional-patterns.git</connection>
+        <developerConnection>scm:git:ssh://github.com:Financial-Times/functional-patterns.git</developerConnection>
+        <url>https://github.com/Financial-Times/functional-patterns</url>
+    </scm>
 
     <properties>
         <assertj.version>3.5.2</assertj.version>
@@ -125,6 +147,46 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.4</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -148,29 +210,6 @@
                         <parallel>methods</parallel>
                         <threadCount>${maven-failsafe-plugin.threadCount}</threadCount>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <!-- Runs testcases named **/*IT.java or **/*ITCase  -->
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>${maven.failsafe.plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>integration-test</goal>
-                                <goal>verify</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <parallel>classes</parallel>
-                        <threadCount>${maven-surefire-plugin.threadCount}</threadCount>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <version>1.4.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
