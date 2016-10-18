@@ -32,6 +32,13 @@
         <url>https://github.com/Financial-Times/functional-patterns</url>
     </scm>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <properties>
         <assertj.version>3.5.2</assertj.version>
         <guava.version>18.0</guava.version>
