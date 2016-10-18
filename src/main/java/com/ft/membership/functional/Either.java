@@ -75,7 +75,7 @@ public abstract class Either<E, R> {
      * @param <R>  type of right result
      * @return a Left Either.
      */
-    public static <E, R> Either<E, R> left(E left) {
+    public static <E, R> Either<E, R> left(final E left) {
         return new Either.Left<>(left);
     }
 
@@ -87,7 +87,7 @@ public abstract class Either<E, R> {
      * @param <R>   type of right result
      * @return a Right Either.
      */
-    public static <E, R> Either<E, R> right(R right) {
+    public static <E, R> Either<E, R> right(final R right) {
         return new Either.Right<>(right);
     }
 
@@ -160,10 +160,32 @@ public abstract class Either<E, R> {
         return rightWhenSome.map(Either::<E, R>right).orElse(Either.left(leftWhenNone));
     }
 
+    /**
+     * convenience method to convert Optional&lt;R&gt; to a Right value if non-empty, or to supplied
+     * Left value if empty.
+     *
+     * @param rightWhenSome        source of right value when Optional is non-empty
+     * @param supplyLeftWhenNone  supplier of left value when Optional is empty
+     * @param <E>                 type of right result
+     * @param <R>                 type of left result
+     * @return an Either
+     */
+    public static <E, R> Either<E, R> fromOptional(final Optional<R> rightWhenSome, final Supplier<E> supplyLeftWhenNone) {
+        return rightWhenSome.map(Either::<E, R>right).orElse(Either.left(supplyLeftWhenNone.get()));
+    }
+
+    /**
+     * return the left value if a Left, else throw.
+     * @return the left value
+     */
     public E left() {
         throw new IllegalStateException("Not left");
     }
 
+    /**
+     * return the right value if a Right, else throw.
+     * @return the right value
+     */
     public R right() {
         throw new IllegalStateException("Not right");
     }
@@ -172,11 +194,11 @@ public abstract class Either<E, R> {
         return this instanceof Left;
     }
 
-    public boolean isLeft(Matcher<E> m) {
+    public boolean isLeft(final Matcher<E> m) {
         return Matchers.isLeft(m).matches(this);
     }
 
-    public boolean isLeft(E e) {
+    public boolean isLeft(final E e) {
         return Matchers.isLeft(e).matches(this);
     }
 
@@ -184,27 +206,12 @@ public abstract class Either<E, R> {
         return this instanceof Right;
     }
 
-    public boolean isRight(Matcher<R> m) {
+    public boolean isRight(final Matcher<R> m) {
         return Matchers.isRight(m).matches(this);
     }
 
-    public boolean isRight(R r) {
+    public boolean isRight(final R r) {
         return Matchers.isRight(r).matches(this);
-    }
-
-    /**
-     * Applies `fl` if this is a `Left` or `fr` if this is a `Right`.
-     *
-     * @param fl  the function to apply if this is a `Left`
-     * @param fr  the function to apply if this is a `Right`
-     * @param <T> type of function result
-     * @return the result of applying the appropriate function
-     */
-    public <T> T fold(Function<E, T> fl, Function<R, T> fr) {
-        if (isRight())
-            return fr.apply(right());
-
-        return fl.apply(left());
     }
 
     /**
@@ -215,7 +222,7 @@ public abstract class Either<E, R> {
      * @param <T> type of function result
      * @return either Right wrapped result of function, or current Left.
      */
-    public <T> Either<E, T> map(Function<R, T> f) {
+    public <T> Either<E, T> map(final Function<R, T> f) {
         if (isRight())
             return Either.right(f.apply(right()));
 
@@ -230,7 +237,7 @@ public abstract class Either<E, R> {
      * @param <T> type of function right result
      * @return the Either result of applying function, or current Left.
      */
-    public <T> Either<E, T> flatMap(Function<R, Either<E, T>> f) {
+    public <T> Either<E, T> flatMap(final Function<R, Either<E, T>> f) {
         if (isRight())
             return f.apply(right());
 
@@ -247,17 +254,54 @@ public abstract class Either<E, R> {
      * @param <T>   type of the other Either's right value
      * @return an Either which will be the result of f(this.right(),other.right()) if both arguments are Right.
      */
-    public <S, T> Either<E, T> map2(Either<E, S> other, BiFunction<R, S, T> f) {
+    public <S, T> Either<E, T> map2(final Either<E, S> other, final BiFunction<R, S, T> f) {
         return flatMap(t -> other.map(o -> f.apply(t, o)));
     }
 
     /**
-     * recovers from a Left value by providing a Right value, or keeps right value if already a Right.
+     * return the result of applying function f to the current Left value, wrapped in a Left Either,
+     * if currently on left path, otherwise keep right if already a Right.
+     *
+     * <p>Use to transform a failure from one type to another.</p>
+     *
+     * @param f   function to map over left values
+     * @param <F> type of left result
+     * @return the Left result of applying function, or current Right.
+     */
+    public <F> Either<F, R> mapLeft(final Function<E, F> f) {
+        if(isLeft()) {
+            return Either.left(f.apply(left()));
+        }
+        return Either.right(right());
+    }
+
+    /**
+     * return the Either result of applying function f to the current Left value,
+     * if currently on the left path, otherwise keep right if already a Right.
+     *
+     * <p>Use to possibly recover to Right when some Lefts are recoverable.</p>
+     *
+     * @param f   function to map over left values
+     * @param <F> type of left result
+     * @return the Either result of applying function, or current Right.
+     */
+    public <F> Either<F, R> flatMapLeft(final Function<E, Either<F, R>> f) {
+        if(isLeft()) {
+            return f.apply(left());
+        }
+        return Either.right(right());
+    }
+
+    /**
+     * recovers from a Left by providing a Right value for a given Left value, or keeps
+     * right value if already a Right.
+     *
+     * <p>Use when recovery from a Left is always possible.</p>
      *
      * @param f function providing a right value, of the same type as this Either's R.
      * @return a Right&lt;R&gt;
      */
-    public Either<E, R> recover(Function<E, R> f) {
+    public Either<E, R> recover(final Function<E, R> f) {
         if (isLeft())
             return Either.right(f.apply(left()));
 
@@ -265,23 +309,17 @@ public abstract class Either<E, R> {
     }
 
     /**
-     * fails to the left, regardless of current direction.
+     * apply a function f to the Either, returning a possibly entirely different Either.
      *
-     * @param f a function which is always called to provide a new left value.
-     * @return a Left&lt;E&gt;
-     */
-    public Either<E, R> fail(Function<Either<E, R>, E> f) {
-        return Either.left(f.apply(this));
-    }
-
-    /**
-     * fails to the left, regardless of current direction.
+     * <p>Prefer flatMap() or flatMapLeft() etc. to this function.</p>
      *
-     * @param f a function which is always called to provide the new left value.
-     * @return a Left&lt;E&gt;
+     * @param f function taking an Either
+     * @param <F> new left type
+     * @param <S> new right type
+     * @return an Either
      */
-    public Either<E, R> fail(Supplier<E> f) {
-        return Either.left(f.get());
+    public <F, S> Either<F, S> transform(final Function<Either<E, R>, Either<F, S>> f) {
+        return f.apply(this);
     }
 
     /**
@@ -290,7 +328,7 @@ public abstract class Either<E, R> {
      * @param f function which returns an alternative value, given the Left value.
      * @return a value
      */
-    public R orElse(Function<E, R> f) {
+    public R orElse(final Function<E, R> f) {
         if (isLeft())
             return f.apply(left());
 
@@ -303,11 +341,26 @@ public abstract class Either<E, R> {
      * @param value alternative value if Left
      * @return a value
      */
-    public R orElse(R value) {
+    public R orElse(final R value) {
         if (isLeft())
             return value;
 
         return right();
+    }
+
+    /**
+     * Applies `fl` if this is a `Left` or `fr` if this is a `Right`, returning a final value.
+     *
+     * @param fl  the function to apply if this is a `Left`
+     * @param fr  the function to apply if this is a `Right`
+     * @param <T> type of function result
+     * @return the result of applying the appropriate function
+     */
+    public <T> T fold(final Function<E, T> fl, final Function<R, T> fr) {
+        if (isRight())
+            return fr.apply(right());
+
+        return fl.apply(left());
     }
 
     /**
