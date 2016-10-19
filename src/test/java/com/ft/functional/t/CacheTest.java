@@ -1,6 +1,6 @@
-package com.ft.membership.functional.t;
+package com.ft.functional.t;
 
-import com.ft.membership.functional.Cache;
+import com.ft.functional.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.junit.Test;
 
@@ -13,7 +13,7 @@ import static org.junit.Assert.assertThat;
 public class CacheTest {
 
     @Test
-    public void should_wrap_simple_function() throws Exception {
+    public void cache_function() throws Exception {
         final com.google.common.cache.Cache<Integer, Integer> cache = CacheBuilder.newBuilder().maximumSize(2).recordStats().build();
         final Function<Integer, Integer> f = (Integer x) -> x * 2;
 

@@ -1,4 +1,4 @@
-package com.ft.membership.functional;
+package com.ft.functional;
 
 import com.google.common.base.Preconditions;
 import org.hamcrest.BaseMatcher;

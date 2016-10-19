@@ -1,13 +1,12 @@
-package com.ft.membership.functional.t;
+package com.ft.functional.t;
 
-import com.ft.membership.functional.Case;
+import com.ft.functional.Case;
 import org.junit.Test;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import static com.ft.membership.functional.Case.Matchers.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertThat;
@@ -89,8 +88,8 @@ public class CaseTest {
         String b = null;
 
         Integer result = Case.<Integer>match(a, b)
-                .when(1, Any).apply(() -> 1)
-                .when(2, Any).apply(() -> 2)
+                .when(1, Case.Matchers.Any).apply(() -> 1)
+                .when(2, Case.Matchers.Any).apply(() -> 2)
                 .when(2, "c").apply(() -> 3)
                 .orElse(0);
 
@@ -103,8 +102,8 @@ public class CaseTest {
         String b = null;
 
         Integer result = Case.<Integer>match(a, b)
-                .when(1, __).apply(() -> 1)
-                .when(2, __).apply(() -> 2)
+                .when(1, Case.Matchers.__).apply(() -> 1)
+                .when(2, Case.Matchers.__).apply(() -> 2)
                 .when(2, "c").apply(() -> 3)
                 .orElse(0);
 
@@ -117,8 +116,8 @@ public class CaseTest {
         String b = null;
 
         Integer result = Case.<Integer>match(a, b)
-                .when(1,Null).apply(() -> 1)
-                .when(2, Null).apply(() -> 2)
+                .when(1, Case.Matchers.Null).apply(() -> 1)
+                .when(2, Case.Matchers.Null).apply(() -> 2)
                 .when(2, "c").apply(() -> 3)
                 .orElse(0);
 
@@ -131,9 +130,9 @@ public class CaseTest {
         String b = "c";
 
         Integer result = Case.<Integer>match(a, b)
-                .when(1,Null).apply(() -> 1)
-                .when(2, Null).apply(() -> 2)
-                .when(2, Ref).apply(() -> 3)
+                .when(1, Case.Matchers.Null).apply(() -> 1)
+                .when(2, Case.Matchers.Null).apply(() -> 2)
+                .when(2, Case.Matchers.Ref).apply(() -> 3)
                 .orElse(0);
 
         assertThat(result, is(3));
@@ -145,9 +144,9 @@ public class CaseTest {
         String b = "x";
 
         Integer result = Case.<Integer>match(a, b)
-                .when(1,__).apply(() -> 1)
-                .when(2, __).apply(() -> 2)
-                .when(__, "c").apply(() -> 3)
+                .when(1, Case.Matchers.__).apply(() -> 1)
+                .when(2, Case.Matchers.__).apply(() -> 2)
+                .when(Case.Matchers.__, "c").apply(() -> 3)
                 .orElse(0);
 
         assertThat(result, is(0));
@@ -159,7 +158,7 @@ public class CaseTest {
         String b = "x";
 
         Case.<Integer>match(a, b)
-                .when(1,__).apply(() -> 1)
+                .when(1, Case.Matchers.__).apply(() -> 1)
                 .orElseThrow(RuntimeException::new);
     }
 
@@ -169,7 +168,7 @@ public class CaseTest {
         String b = "x";
 
         Case.<Integer>match(a, b)
-                .when(1,__).apply(() -> 1)
+                .when(1, Case.Matchers.__).apply(() -> 1)
                 .orElseThrow();
     }
 
@@ -179,7 +178,7 @@ public class CaseTest {
         String b = "x";
 
         Integer result = Case.<Integer>match(a, b)
-                .when(1,__).apply(() -> 1)
+                .when(1, Case.Matchers.__).apply(() -> 1)
                 .orElseGet(() -> 8);
 
         assertThat(result, is(8));
@@ -190,7 +189,7 @@ public class CaseTest {
         Optional<String> a = Optional.empty();
 
         Integer result = Case.<Integer>match(a)
-                .when(None).apply(() -> 1)
+                .when(Case.Matchers.None).apply(() -> 1)
                 .orElse(0);
 
         assertThat(result, is(1));
@@ -201,8 +200,8 @@ public class CaseTest {
         Optional<String> a = Optional.of("Hello");
 
         Integer result = Case.<Integer>match(a)
-                .when(None).apply(() -> 1)
-                .when(Some).apply(() -> 2)
+                .when(Case.Matchers.None).apply(() -> 1)
+                .when(Case.Matchers.Some).apply(() -> 2)
                 .orElse(0);
 
         assertThat(result, is(2));
@@ -212,7 +211,7 @@ public class CaseTest {
     public void no_illegal_argument_on_single_null_value() {
         Object a = null;
         Case.<Integer>match(a)
-                .when(__).apply(() -> 1)
+                .when(Case.Matchers.__).apply(() -> 1)
                 .orElse(0);
     }
 
@@ -220,7 +219,7 @@ public class CaseTest {
     public void illegal_argument_on_null_varargs_array_value() {
         Object[] a = null;
         Case.<Integer>match(a)
-                .when(__).apply(() -> 1)
+                .when(Case.Matchers.__).apply(() -> 1)
                 .orElse(0);
     }
 
@@ -229,7 +228,7 @@ public class CaseTest {
         Integer a = 1;
 
         Case.<Integer>match(a)
-                .when(__, 1).apply(() -> 1)
+                .when(Case.Matchers.__, 1).apply(() -> 1)
                 .orElse(0);
 
     }
@@ -240,7 +239,7 @@ public class CaseTest {
         Integer a = 1;
 
         Case.<Integer>match(a,5)
-                .when(__, 1, 2).apply(() -> 1)
+                .when(Case.Matchers.__, 1, 2).apply(() -> 1)
                 .orElse(0);
 
     }
@@ -251,7 +250,7 @@ public class CaseTest {
         String b = "x";
 
         Integer result = Case.<Integer>match(a, b, 19.4)
-                .when(3, __, __).applyValues((args) -> args.length)
+                .when(3, Case.Matchers.__, Case.Matchers.__).applyValues((args) -> args.length)
                 .orElseGet(() -> 8);
 
         assertThat(result, is(3));
@@ -264,9 +263,9 @@ public class CaseTest {
         Integer c = null;
 
         Integer result = Case.<Integer>match(a, b, c)
-                .when(a, Null, Null).apply(() -> 1)
-                .when(Null, b, Null).apply(() -> 2)
-                .when(Null, Null, c).apply(() -> 3)
+                .when(a, Case.Matchers.Null, Case.Matchers.Null).apply(() -> 1)
+                .when(Case.Matchers.Null, b, Case.Matchers.Null).apply(() -> 2)
+                .when(Case.Matchers.Null, Case.Matchers.Null, c).apply(() -> 3)
                 .orElse(0);
 
         assertThat(result, is(2));
@@ -279,9 +278,9 @@ public class CaseTest {
         Optional<Integer> c = Optional.empty();
 
         Integer result = Case.<Integer>match(a, b, c)
-                .when(a, None, None).apply(() -> 1)
-                .when(None, b, None).apply(() -> 2)
-                .when(None, None, c).apply(() -> 3)
+                .when(a, Case.Matchers.None, Case.Matchers.None).apply(() -> 1)
+                .when(Case.Matchers.None, b, Case.Matchers.None).apply(() -> 2)
+                .when(Case.Matchers.None, Case.Matchers.None, c).apply(() -> 3)
                 .orElse(0);
 
         assertThat(result, is(2));
@@ -292,12 +291,12 @@ public class CaseTest {
         String op = "add";
         Integer a = 3, b = 2;
         Integer result = Case.<Integer>match( op, a, b )
-                .when( "square", Ref, Null ).apply(() -> a * a)
-                .when( "cube",   Ref, Null ).apply( () -> a * a * a )
-                .when( "add",    Ref, Ref  ).apply( () -> a + b )
-                .when( "sub",    Ref, Ref  ).apply( () -> a - b )
-                .when( "div",    Ref, 0    ).thenThrow(() -> new IllegalArgumentException("divide by zero"))
-                .when( "div",    Ref, Ref  ).apply( () -> a / b )
+                .when( "square", Case.Matchers.Ref, Case.Matchers.Null ).apply(() -> a * a)
+                .when( "cube",   Case.Matchers.Ref, Case.Matchers.Null ).apply( () -> a * a * a )
+                .when( "add",    Case.Matchers.Ref, Case.Matchers.Ref  ).apply( () -> a + b )
+                .when( "sub",    Case.Matchers.Ref, Case.Matchers.Ref  ).apply( () -> a - b )
+                .when( "div",    Case.Matchers.Ref, 0    ).thenThrow(() -> new IllegalArgumentException("divide by zero"))
+                .when( "div",    Case.Matchers.Ref, Case.Matchers.Ref  ).apply( () -> a / b )
                 .map(r -> {
                     System.out.println("Either: " + r);
                     return r;

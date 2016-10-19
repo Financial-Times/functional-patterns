@@ -1,4 +1,4 @@
-package com.ft.membership.functional;
+package com.ft.functional;
 
 import com.google.common.base.MoreObjects;
 import org.hamcrest.BaseMatcher;
@@ -21,11 +21,11 @@ import static org.hamcrest.CoreMatchers.is;
  * Delay exceptional handling using a error-or-result chaining, rather than nested try/throw/catch blocks:
  * </p>
  * <pre>
- *     import com.ft.membership.functional.Either;
- *     import com.ft.membership.functional.Case;
+ *     import com.ft.functional.Either;
+ *     import com.ft.functional.Case;
  *
- *     import static com.ft.membership.functional.Either.*;
- *     import static com.ft.membership.functional.Either.Matchers.*;
+ *     import static com.ft.functional.Either.*;
+ *     import static com.ft.functional.Either.Matchers.*;
  *
  *     Either&lt;Exception,String&gt; n =
  *         trying( () -&gt; methodThatMightThrow( someInput ) )
@@ -38,30 +38,31 @@ import static org.hamcrest.CoreMatchers.is;
  *         System.out.println(n.right());
  *     } else {
  *         // failure; exception in n.left()
- *         System.out.println(n.left().getMessage());
+ *         System.err.println(n.left().getMessage());
  *     }
  *
- *     // or using com.ft.membership.functional.Case:
+ *     // or using com.ft.functional.Case:
  *     System.out.println(
  *         Case.&lt;String&gt;match(n)
- *             .when(isLeft()).apply(() -&gt; n.left().getMessage())
+ *             .when(Left).apply(() -&gt; n.left().getMessage())
  *             .orElse(n::right)
  *         );
- *
  * </pre>
- * <p>
- * <p>Whereas {@link java.util.Optional Optional} can yield a result, or nothing, Either can yield a result
- * <em>right</em>, or another value <em>left</em>. Left is used, by convention, for the exceptional case,
- * but may, or may not, actually be an instance of {@link java.lang.Exception}.</p>
- * <p>
- * <p>The <em>right</em> path yields the result only if all operations succeed, the <em>left</em> path returns the exceptional value
- * from the first failed operation. The type of the <em>right</em> path can vary along the chain, since only the last operation
- * yields a result, the type of the  <em>left</em> path cannot vary since the chain can potentially fail, at any link, and fall-through.</p>
- * <p>
+ * 
+ * <p>Whereas {@link java.util.Optional Optional} can yield a result, or nothing, <tt>Either</tt> yields either a <em>right</em> result,
+ * signifying success, or an exceptional <em>left</em> result, conventionally signifying failure.</p>
+ *
+ * <p>The <em>right</em> path yields the result of all chained operations, if they all succeed, returning a <em>Right</em> result,
+ * the <em>left</em> path returns the exceptional value from the first operation that fails, returning a <em>Left</em> result. The type of
+ * the <em>right</em> path can vary along the chain, since only the final operation yields a result, the type of the  <em>left</em>
+ * path generally cannot vary since the chain can potentially fail left, at any link, and fall-through the rest of the operations.</p>
+ *
  * <dl>
- * <dt>right()</dt><dd>yields the happy-path 'right' result</dd>
- * <dt>left()</dt><dd>yields the unhappy-path or exceptional result</dd>
+ * <dt>right()</dt><dd>yields the value of the happy-path 'right' result</dd>
+ * <dt>left()</dt><dd>yields the value of the unhappy-path, 'left' result</dd>
  * </dl>
+ *
+ * <p>NB The left value need not actually be an instance of {@link java.lang.Exception}.</p>
  *
  * @see <a href="http://fsharpforfunandprofit.com/rop/">Railway Oriented Programming</a>
  */

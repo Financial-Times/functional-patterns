@@ -1,11 +1,11 @@
-package com.ft.membership.functional.t;
+package com.ft.functional.t;
 
 import org.junit.Test;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.ft.membership.functional.OptionalFunctions.firstPresentOf;
+import static com.ft.functional.OptionalFunctions.firstPresentOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -16,7 +16,7 @@ public class OptionalFunctionsTest {
     private static final Optional<String> ALSOPRESENT = Optional.of("also");
 
     @Test
-    public void shouldReturnFirstPresent() {
+    public void first_present_of() {
         assertThat(firstPresentOf(EMPTY), is(EMPTY));
         assertThat(firstPresentOf(EMPTY, EMPTY), is(EMPTY));
         assertThat(firstPresentOf(PRESENT), is(PRESENT));
@@ -29,7 +29,7 @@ public class OptionalFunctionsTest {
     }
 
     @Test
-    public void shouldReturnFirstPresentFunction() {
+    public void first_present_of_supplier() {
         assertThat(firstPresentOf(() -> EMPTY), is(EMPTY));
         assertThat(firstPresentOf(() -> EMPTY, () -> EMPTY), is(EMPTY));
         assertThat(firstPresentOf(() -> PRESENT), is(PRESENT));
@@ -41,7 +41,7 @@ public class OptionalFunctionsTest {
     }
 
     @Test
-    public void shouldReturnFirstPresentFunctionIsLazy() {
+    public void first_present_of_supplier_is_lazy() {
         final AtomicInteger i = new AtomicInteger();
 
         final Optional<Integer> result = firstPresentOf(Optional::empty, () -> Optional.of(i.incrementAndGet()), () -> Optional.of(i.addAndGet(100)));

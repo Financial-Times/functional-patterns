@@ -1,4 +1,4 @@
-package com.ft.membership.functional;
+package com.ft.functional;
 
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;

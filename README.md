@@ -3,12 +3,20 @@
 Some useful functional patterns, and utility functions for use with ```Stream```, ```Optional``` and ```Map```.
 
 
-## Memorize
+## Either
+A monad to make exceptional condition handling more functional:
 
-Memorize a (possibly expensive) operation, called on demand:
+    Either<Exception, Double> result =
+            trying(() -> Integer.parseInt(someInputString))
+                .map(x -> 2 * x)
+                .flatMap(x -> right(x % 10))
+                .map(this::toDouble);
 
-    // call a client at most once:
-    Supplier<List<Things>> thingFetcher = Memorize.memorize( () -> client.fetchAll() );
+    if(result.isRight()) {
+        // happy right() Double
+    } else {
+        // sad left() Exception
+    }
 
 ## Case
 Evaluate a lambda when list of values matches list of patterns:
@@ -27,20 +35,17 @@ Evaluate a lambda when list of values matches list of patterns:
              })
              .orElseThrow( () -> new IllegalArgumentException("no matching operation" ) );
 
-## Either
-A monad to make exceptional condition handling more functional:
+## Memoize
 
-    Either<Exception, Double> result =
-            trying(() -> Integer.parseInt(someInputString))
-                .map(x -> 2 * x)
-                .flatMap(x -> right(x % 10))
-                .map(this::toDouble);
+[Memoize](https://en.wikipedia.org/wiki/Memoization) a (possibly expensive) operation, called on demand:
 
-    if(result.isRight()) {
-        // happy right() Double
-    } else {
-        // sad left() Exception
-    }
+    // a supplier which will call a client at most once:
+    Supplier<List<Things>> thingFetcher = Memoize.memorize( () -> client.fetchAll() );
+    ...
+    thingFetcher.get();
+
+The resulting `Supplier` is thread-safe, and guarantees that the operation will be called 
+only once, even if shared between threads.
 
 ## Cache
 Returns a function which caches results in the given Guava Cache, hiding the use of the cache:
@@ -50,13 +55,25 @@ Returns a function which caches results in the given Guava Cache, hiding the use
 
     Function<Integer,String> f = x -> ... ;
     Function<Integer,String> cachedF = Cache.cached(cache, f);
-
+    ...
     cachedF.apply(10); // f(10) calculated and cached
-    cachedF.apply(10); // potentially used cached result of f(10)
+    cachedF.apply(10); // potentially using cached result of f(10)
+
+## Curry
+['Curry'](https://en.wikipedia.org/wiki/Currying) a parameter into a function, returning a function with 
+one less parameter:
+
+    BiFunction<Double, Double, Double> pow = (x,y) -> Math.pow(x, y);
+    
+    Function<Double, Double> powerOfTwo = Curry.curry(pow, 2);
+    
+    powerOfTwo.apply(4); // 16 
+    
+Maps `Function` -> `Supplier`; `BiFunction` ->`Function` and `BiConsumer` -> `Consumer`.
 
 ## MapFunctions
 
-Re-calculate values of map:--
+Re-calculate values of map:
 
     // keep all keys, multiply each value by 10
     final ImmutableMap<String, Integer> input = ImmutableMap.of("a", 1, "b", 2, "c", 3);

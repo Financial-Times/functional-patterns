@@ -1,15 +1,10 @@
-package com.ft.membership.functional;
+package com.ft.functional;
 
-import com.google.common.util.concurrent.ExecutionError;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 
-import java.util.ConcurrentModificationException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 /**
@@ -21,14 +16,16 @@ import java.util.function.Supplier;
  * <p>
  * The returned function is thread-safe if the inner function is also thread safe.
  * </p>
+ *
+ * @see Cache
  */
- public class Memorize {
+ public class Memoize {
 
     /**
      * memorise a {@code Supplier}.
-     * @param inner a supplier to memorise
+     * @param inner a supplier to memoize
      * @param <R> type returned by supplier
-     * @return memorised supplier
+     * @return memoized supplier
      */
     public static <R> Supplier<R> memorize(final Supplier<R> inner) {
         /* NB we don't use the easy-to-use updateAndGet() here because it doesn't

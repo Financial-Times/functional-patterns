@@ -1,4 +1,4 @@
-package com.ft.membership.functional;
+package com.ft.functional;
 
 import java.util.Map;
 import java.util.Optional;

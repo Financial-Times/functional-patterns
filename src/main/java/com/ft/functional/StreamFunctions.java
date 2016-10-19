@@ -1,4 +1,4 @@
-package com.ft.membership.functional;
+package com.ft.functional;
 
 import javax.annotation.Nullable;
 import java.util.Objects;

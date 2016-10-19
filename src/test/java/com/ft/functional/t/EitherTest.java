@@ -1,7 +1,7 @@
-package com.ft.membership.functional.t;
+package com.ft.functional.t;
 
-import com.ft.membership.functional.Case;
-import com.ft.membership.functional.Either;
+import com.ft.functional.Case;
+import com.ft.functional.Either;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -11,10 +11,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-import static com.ft.membership.functional.Either.Matchers.*;
-import static com.ft.membership.functional.Either.left;
-import static com.ft.membership.functional.Either.right;
-import static com.ft.membership.functional.Either.trying;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -23,23 +19,23 @@ import static org.junit.Assert.fail;
 public class EitherTest {
 
     @Test
-    public void isEither() throws Exception {
-        assertThat(left(5).isLeft(), is(true));
-        assertThat(left(5).isRight(), is(false));
+    public void is_either() throws Exception {
+        assertThat(Either.left(5).isLeft(), is(true));
+        assertThat(Either.left(5).isRight(), is(false));
 
         assertThat(Either.right(5).isLeft(), is(false));
         assertThat(Either.right(5).isRight(), is(true));
     }
 
     @Test
-    public void isEitherMatcher() throws Exception {
-        assertThat(left(5).isLeft(is(5)), is(true));
-        assertThat(left(5).isLeft(is(10)), is(false));
-        assertThat(left(5).isRight(is(5)), is(false));
+    public void is_either_matcher() throws Exception {
+        assertThat(Either.left(5).isLeft(is(5)), is(true));
+        assertThat(Either.left(5).isLeft(is(10)), is(false));
+        assertThat(Either.left(5).isRight(is(5)), is(false));
 
-        assertThat(left(5).isLeft(5), is(true));
-        assertThat(left(5).isLeft(10), is(false));
-        assertThat(left(5).isRight(5), is(false));
+        assertThat(Either.left(5).isLeft(5), is(true));
+        assertThat(Either.left(5).isLeft(10), is(false));
+        assertThat(Either.left(5).isRight(5), is(false));
 
         assertThat(Either.right(5).isLeft(is(5)), is(false));
         assertThat(Either.right(5).isRight(is(5)), is(true));
@@ -126,7 +122,7 @@ public class EitherTest {
         Either<Exception, String> result =
                 this.<Exception, Integer>functionThatReturnsRight(10)
                         .map(x -> 2 * x)
-                        .flatMap(x -> right(x * 10))
+                        .flatMap(x -> Either.right(x * 10))
                         .map(this::toDouble)
                         .map(Object::toString);
 
@@ -140,7 +136,7 @@ public class EitherTest {
         Either<Exception, Double> result =
                 this.<Exception, Integer>functionThatReturnsLeft(new RuntimeException("1"))
                         .map(x -> 2 * x)
-                        .flatMap(x -> right(x * 10))
+                        .flatMap(x -> Either.right(x * 10))
                         .map(this::toDouble);
 
         assertThat(result.isRight(), is(false));
@@ -166,7 +162,7 @@ public class EitherTest {
 
     @Test
     public void trying_when_no_exception_is_right() throws Exception {
-        Either<Exception, Integer> result = trying(() -> 2);
+        Either<Exception, Integer> result = Either.trying(() -> 2);
 
         assertThat(result.isRight(), is(true));
         assertThat(result.right(), is(2));
@@ -175,7 +171,7 @@ public class EitherTest {
     @Test
     public void trying_with_exception_is_left() throws Exception {
         Either<Exception, Double> result =
-                trying(() -> 1 / 0).map(this::toDouble);
+                Either.trying(() -> 1 / 0).map(this::toDouble);
 
         assertThat(result.isRight(), is(false));
         assertThat(result.isLeft(), is(true));
@@ -184,15 +180,15 @@ public class EitherTest {
 
     @Test
     public void trying_with_handler() throws Exception {
-        Either<String, Integer> right = trying(() -> 23, ex -> left("E"));
+        Either<String, Integer> right = Either.trying(() -> 23, ex -> Either.left("E"));
         assertThat(right.isRight(), is(true));
         assertThat(right.right(), is(23));
 
-        Either<String, Integer> handleLeft = trying(this::supplierThatAlwaysThrows, ex -> left("E"));
+        Either<String, Integer> handleLeft = Either.trying(this::supplierThatAlwaysThrows, ex -> Either.left("E"));
         assertThat(handleLeft.isLeft(), is(true));
         assertThat(handleLeft.left(), is("E"));
 
-        Either<String, Integer> handlerRight = trying(this::supplierThatAlwaysThrows, ex -> Either.right(23));
+        Either<String, Integer> handlerRight = Either.trying(this::supplierThatAlwaysThrows, ex -> Either.right(23));
         assertThat(handlerRight.isRight(), is(true));
         assertThat(handlerRight.right(), is(23));
     }
@@ -276,7 +272,7 @@ public class EitherTest {
     public void flatMapLeft_can_map_to_any_left() throws Exception {
         Either<Exception, Integer> result =
                 Either.<String, Integer>left("Error")
-                        .flatMapLeft(f -> left(new ArithmeticException(f)));
+                        .flatMapLeft(f -> Either.left(new ArithmeticException(f)));
 
         assertThat(result.isLeft(), is(true));
         assertThat(result.left(), instanceOf(ArithmeticException.class));
@@ -334,7 +330,7 @@ public class EitherTest {
     public void transform_right_can_return_any_left() throws Exception {
         Either<Integer, String> result =
             Either.<String,Integer>right(2)
-                    .transform(either -> left(5));
+                    .transform(either -> Either.left(5));
 
         assertThat(result.isLeft(), is(true));
         assertThat(result.left(), is(5));
@@ -342,13 +338,13 @@ public class EitherTest {
 
     @Test
     public void or_else() throws Exception {
-        assertThat(left("L").orElse("A"), is("A"));
+        assertThat(Either.left("L").orElse("A"), is("A"));
         assertThat(Either.right("R").orElse("A"), is("R"));
     }
 
     @Test
     public void or_else_with_function() throws Exception {
-        assertThat(left("L").orElse(__ -> "A"), is("A"));
+        assertThat(Either.left("L").orElse(__ -> "A"), is("A"));
         assertThat(Either.right("R").orElse(__ -> "A"), is("R"));
     }
 
@@ -370,7 +366,7 @@ public class EitherTest {
     public void peek_has_no_effect_on_either() throws Exception {
         AtomicInteger integer = new AtomicInteger();
 
-        final Either<String, Object> lefty = left("L");
+        final Either<String, Object> lefty = Either.left("L");
         assertThat(lefty.peek(either -> integer.incrementAndGet()),is(lefty));
         assertThat(integer.get(), is(1));
 
@@ -388,7 +384,7 @@ public class EitherTest {
         assertThat(ref.get(), is("N"));
         assertThat(righty1, is(righty));
 
-        Either<String, String> lefty = left("L");
+        Either<String, String> lefty = Either.left("L");
         Either<String, String> lefty1 = lefty.ifLeft(ref::set);
         assertThat(ref.get(), is("L"));
         assertThat(lefty1, is(lefty));
@@ -398,7 +394,7 @@ public class EitherTest {
     public void ifRight() throws Exception {
         AtomicReference<String> ref = new AtomicReference<>("N");
 
-        final Either<String, String> lefty = left("L");
+        final Either<String, String> lefty = Either.left("L");
         final Either<String, String> lefty1 = lefty.ifRight(ref::set);
         assertThat(ref.get(), is("N"));
         assertThat(lefty1, is(lefty));
@@ -411,7 +407,7 @@ public class EitherTest {
 
     @Test
     public void toOptional() throws Exception {
-        final Either<Integer,String> left = left(76);
+        final Either<Integer,String> left = Either.left(76);
         final Either<Integer,String> right = Either.right("R");
 
         assertThat(left.toOptional().isPresent(), is(false));
@@ -420,8 +416,8 @@ public class EitherTest {
     }
 
     @Test
-    public void toOptionalWithTransform() throws Exception {
-        final Either<Integer,String> left = left(76);
+    public void toOptional_transform() throws Exception {
+        final Either<Integer,String> left = Either.left(76);
         final Either<Integer,String> right = Either.right("R");
 
         final Function<String, String> t = r -> r + r;
@@ -443,14 +439,14 @@ public class EitherTest {
     }
 
     @Test
-    public void foldLeft() {
-        Either<Integer, Integer> left = left(1);
+    public void fold_left() {
+        Either<Integer, Integer> left = Either.left(1);
 
         assertThat(left.fold(i -> i + "A", i -> i + "B"), is("1A"));
     }
 
     @Test
-    public void foldRight() {
+    public void fold_right() {
         Either<Integer, Integer> right = Either.right(2);
 
         assertThat(right.fold(i -> i + "A", i -> i + "B"), is("2B"));
@@ -459,7 +455,7 @@ public class EitherTest {
 
     @Test
     public void matchers() throws Exception {
-        final Either<Integer,String> left = left(76);
+        final Either<Integer,String> left = Either.left(76);
         final Either<Integer,String> right = Either.right("R");
 
 
@@ -488,7 +484,7 @@ public class EitherTest {
         final long someInput = System.currentTimeMillis();
 
         Either<Exception, String> n =
-                trying(() -> functionThatMightThrow(someInput))
+                Either.trying(() -> functionThatMightThrow(someInput))
                         .map(x -> x * 100)
                         .map(x -> String.format("The number of the day is %.2f", x));
 
@@ -504,10 +500,10 @@ public class EitherTest {
         // or using Case
         System.out.println(
                 Case.<String>match(n)
-                        .when(Left).apply(() -> n.left().getMessage())
-                        .when(isRight(0.0)).apply(() -> "nada")
-                        .when(isRight(containsString(".0"))).apply(() -> n.right().split(".")[0])
-                        .when(Right).apply(n::right)
+                        .when(Either.Matchers.Left).apply(() -> n.left().getMessage())
+                        .when(Either.Matchers.isRight(0.0)).apply(() -> "nada")
+                        .when(Either.Matchers.isRight(containsString(".0"))).apply(() -> n.right().split(".")[0])
+                        .when(Either.Matchers.Right).apply(n::right)
                         .get()
         );
     }
@@ -526,7 +522,7 @@ public class EitherTest {
     }
 
     private <E, R> Either<E, R> functionThatReturnsLeft(E leftValue) {
-        return left(leftValue);
+        return Either.left(leftValue);
     }
 
     private <T> T supplierThatAlwaysThrows() {

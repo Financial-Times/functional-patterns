@@ -1,9 +1,8 @@
-package com.ft.membership.functional.t;
+package com.ft.functional.t;
 
-import com.ft.membership.functional.Memorize;
+import com.ft.functional.Memoize;
 import org.junit.Test;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -11,14 +10,14 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class MemorizeTest {
+public class MemoizeTest {
 
     @Test
-    public void should_call_memorized_supplier_only_once() throws Exception {
+    public void calls_memoized_supplier_only_once() throws Exception {
 
         final AtomicInteger i = new AtomicInteger(0);
 
-        final Supplier<Integer> f = Memorize.memorize(i::incrementAndGet);
+        final Supplier<Integer> f = Memoize.memorize(i::incrementAndGet);
 
         final Integer apply1 = f.get();
         final Integer apply2 = f.get();
@@ -30,12 +29,12 @@ public class MemorizeTest {
     }
 
     @Test
-    public void should_propagate_exception_forever() throws Exception {
+    public void propagates_exception_forever() throws Exception {
 
         final AtomicInteger i = new AtomicInteger(0);
 
         // throws due to divide by zero on first run, but then safe...
-        final Supplier<Integer> f = Memorize.memorize( () -> 10 / i.getAndIncrement() );
+        final Supplier<Integer> f = Memoize.memorize( () -> 10 / i.getAndIncrement() );
 
         try {
             f.get(); // first failure
