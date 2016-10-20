@@ -91,14 +91,14 @@ Remove all the keys with empty Optional values:
 
 First non-empty of a list of optionals in order:
 
-    OptionalFunctions.firstPresentOf(Optional.of(1), Optional.of(2));
+    OptionalFunctions.firstPresentOf(Optional.of(1), Optional.of(2)); // Optional.of(1)
 
 First non-empty result of evaluating a list of Suppliers in order:
 
-    OptionalFunctions.firstPresentOf(() -> 1, () -> 2);
+    OptionalFunctions.firstPresentOf(Optional::empty, () -> Optional.of(2)); // Optional.of(2)
 
 ## StreamFunctions
 
 Provide a stream of non-null values:
 
-    StreamFunctions.safeStreamOf(1, null, 23, null).map(x -> x * x);
+    StreamFunctions.safeStreamOf(1, null, 23, null).map(x -> x * x); // 1, 529
