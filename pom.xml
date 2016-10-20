@@ -3,6 +3,7 @@
 
     <name>Functional Patterns</name>
     <description>A collection of functional programming patterns for Java 8+</description>
+    <url>https://github.com/Financial-Times/functional-patterns</url>
 
     <licenses>
         <license>
