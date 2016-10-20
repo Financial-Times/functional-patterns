@@ -24,7 +24,7 @@
 
     <groupId>com.ft</groupId>
     <artifactId>functional-patterns</artifactId>
-    <version>1.0.14-SNAPSHOT</version>
+    <version>2.0.0</version>
 
     <scm>
         <connection>scm:git:git://github.com/Financial-Times/functional-patterns.git</connection>
