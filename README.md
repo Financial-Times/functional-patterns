@@ -1,5 +1,7 @@
 # Functional Patterns
 
+[![CircleCI](https://circleci.com/gh/Financial-Times/functional-patterns.svg?style=svg&circle-token=f993e93121c3784901f270d2b3cc6e90a2fdbe99)](https://circleci.com/gh/Financial-Times/functional-patterns)
+
 Some useful functional patterns, and utility functions for use with ```Stream```, ```Optional``` and ```Map```.
 
 
