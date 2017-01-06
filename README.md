@@ -95,7 +95,7 @@ First non-empty of a list of optionals in order:
 
 First non-empty result of evaluating a list of Suppliers in order:
 
-    OptionalFunctions.firstPresentOf(Optional::empty, () -> Optional.of(2)); // Optional.of(2)
+    OptionalFunctions.firstPresentOf(() -> Optional::empty, () -> Optional.of(2)); // Optional.of(2)
 
 ## StreamFunctions
 
